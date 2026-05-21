@@ -5,11 +5,6 @@ import json
 import streamlit as st
 import pandas as pd
 from openai import OpenAI
-from dotenv import load_dotenv
-
-# Load environmental variables from .env file
-load_dotenv()
-
 # Fine-tuned model mappings
 MODEL_MAPPING = {
     "ART-6k": "ft:gpt-4.1-mini-2025-04-14:contentwhale:cw-art-gen-fin-6k:D06XDIUh",
@@ -213,12 +208,15 @@ def reset_state():
 
 def main():
     # Sidebar parameter configuration
-    st.sidebar.markdown("## ⚙️ Model Parameters")
+    # API Key check from Streamlit secrets
+    api_key = None
+    if "OPENAI_API_KEY" in st.secrets:
+        api_key = st.secrets["OPENAI_API_KEY"]
+        st.sidebar.info("API key found in secrets.")
+    else:
+        st.sidebar.error("⚠️ OPENAI_API_KEY not found in Streamlit secrets!")
     
-    # API Key check
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        st.sidebar.error("⚠️ OPENAI_API_KEY not found in .env file or environment!")
+    st.sidebar.markdown("## ⚙️ Model Parameters")
     
     selected_model_name = st.sidebar.selectbox(
         "Choose Fine-Tuned Model",
@@ -229,11 +227,8 @@ def main():
     model_id = MODEL_MAPPING[selected_model_name]
     
     temperature = st.sidebar.slider("Temperature", min_value=0.0, max_value=2.0, value=0.2, step=0.1, on_change=reset_state)
-    st.sidebar.info("High - More creative, less predictable")
     top_p = st.sidebar.slider("Top P", min_value=0.0, max_value=1.0, value=1.0, step=0.05, on_change=reset_state)
-    st.sidebar.info("High - more words for the model to pick from")
     frequency_penalty = st.sidebar.slider("Frequency Penalty", min_value=0.0, max_value=2.0, value=0.5, step=0.1, on_change=reset_state)
-    st.sidebar.info("High - more penalty for repeated words")
 
     st.markdown("# 📝 Fine-Tuned Article Generator")
     st.markdown("Convert database-backed article briefs into high-quality articles using fine-tuned OpenAI models.")
@@ -320,10 +315,11 @@ def main():
         if error:
             st.error(f"❌ Error calling OpenAI: {error}")
             return
-        
+            
+        # Clean response text (replace "a^1" with "Rs.")
         if content:
             content = content.replace("a^1", "Rs.")
-        
+            
         # Store results in session state
         st.session_state["generated_content"] = content
         st.session_state["prompt_tokens"] = prompt_tokens
