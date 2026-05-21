@@ -227,9 +227,11 @@ def main():
     model_id = MODEL_MAPPING[selected_model_name]
     
     temperature = st.sidebar.slider("Temperature", min_value=0.0, max_value=2.0, value=0.2, step=0.1, on_change=reset_state)
+    st.sidebar.info("High - More creative, less predictable")
     top_p = st.sidebar.slider("Top P", min_value=0.0, max_value=1.0, value=1.0, step=0.05, on_change=reset_state)
+    st.sidebar.info("High - more words for the model to pick from")
     frequency_penalty = st.sidebar.slider("Frequency Penalty", min_value=0.0, max_value=2.0, value=0.5, step=0.1, on_change=reset_state)
-
+    st.sidebar.info("High - more penalty for repeated words")
     st.markdown("# 📝 Fine-Tuned Article Generator")
     st.markdown("Convert database-backed article briefs into high-quality articles using fine-tuned OpenAI models.")
 
